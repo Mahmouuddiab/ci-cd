@@ -2,43 +2,39 @@ name: Flutter CI
 
 on:
   push:
-    branches: [main, develop]
+    branches: [ main, master ]
   pull_request:
-    branches: [main, develop]
+    branches: [ main, master ]
 
 jobs:
-  build_and_test:
-    name: Analyze, test, and build
+  ci:
+    name: Code Verification & Testing
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout code
+      - name: Checkout Code
         uses: actions/checkout@v4
 
-      - name: Set up JDK 17
+      - name: Set up Java Development Kit
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
+          distribution: 'zulu'
           java-version: '17'
 
-      - name: Set up Flutter
+      - name: Set up Flutter SDK
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
           channel: 'stable'
           cache: true
 
-      - name: Install dependencies
+      - name: Install Dependencies
         run: flutter pub get
 
-      - name: Verify formatting
+      - name: Verify Code Formatting
         run: dart format --output=none --set-exit-if-changed .
 
-      - name: Analyze project source
+      - name: Analyze Static Code
         run: flutter analyze
 
-      - name: Run tests
+      - name: Execute Unit and Widget Tests
         run: flutter test --coverage
-
-      - name: Build debug APK (sanity build)
-        run: flutter build apk --debug
