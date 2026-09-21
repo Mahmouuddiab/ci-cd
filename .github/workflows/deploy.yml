@@ -1,0 +1,45 @@
+name: Flutter Release
+
+# Runs only when you push a tag like v1.0.0
+# git tag v1.0.0 && git push origin v1.0.0
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build release APK and publish
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.0'
+          channel: 'stable'
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests before releasing
+        run: flutter test
+
+      - name: Build release APK
+        run: flutter build apk --release
+
+      # NOTE: this build is unsigned (debug-signed by default) since no
+      # keystore secrets are configured. For a Play Store deployment, add
+      # KEYSTORE_BASE64 / STORE_PASSWORD / KEY_PASSWORD / KEY_ALIAS as repo
+      # secrets and decode the keystore into android/app before this step.
+
+      - name: Publish GitHub Release with APK
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
